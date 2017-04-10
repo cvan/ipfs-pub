@@ -1,4 +1,4 @@
-# ipfs-pub
+# IPFS Pub
 
 A service for publishing files to [IPFS](https://ipfs.io/).
 

@@ -8,6 +8,8 @@ const url = require('url');
 const formidable = require('formidable');
 const fs = require('fs-extra');
 
+const pkgJson = require('./package.json');
+
 const HOST = process.env.IPFS_PUBLISH_HOST || process.env.HOST || '0.0.0.0';
 const PORT = process.env.IPFS_PUBLISH_PORT || process.env.PORT || 9000;
 
@@ -41,7 +43,7 @@ const server = http.createServer((req, res) => {
       form.on('error', formErr => {
         fs.remove(form.uploadDir);
         if (formErr) {
-          sendResponseUploadError(req, res, formErr);
+          sendResponseUploadError(req, res, fields, files, formErr);
         }
       });
       form.on('end', () => {
@@ -55,7 +57,7 @@ const server = http.createServer((req, res) => {
         }).catch(err => {
          fs.remove(form.uploadDir);
          if (err) {
-            sendResponseUploadError(req, res, 'Unknown Error');
+            sendResponseUploadError(req, res, fields, files, 'Unknown Error');
           }
         });
       });
@@ -97,7 +99,6 @@ function acceptsJson (req) {
 
 function sendResponseUploadForm (req, res) {
   return sendResponse(req, res, {
-    title: 'Upload',
     json: {
       message: `Sample usage: curl -X POST -d @file.extension ${req.url}`
     },
@@ -117,7 +118,7 @@ function sendResponseUploadForm (req, res) {
 function sendResponseUploadSuccess (req, res, fields, files, dir) {
   return ipfsPublish(dir).then(output => {
     sendResponse(req, res, {
-      title: 'Upload',
+      title: 'Upload success!',
       json: {
         success: true,
         message: 'Received upload',
@@ -125,13 +126,14 @@ function sendResponseUploadSuccess (req, res, fields, files, dir) {
         files: files
       },
       html: `
-          <p class="success">Successfully uploaded!</p>
+          <p class="success">Successfully uploaded ${(files && files.length === 1 ? 'file' : 'files')}!</p>
           ${(output && output.hashLocal ? `<p class="success">Published directory to IPFS hash: <a href="https://ipfs.io/ipfs/${output.hashLocal}">${output.hashLocal}</a></p>` : '')}
-          ${(files.length ? `<ul>` : ``)}
+          ${(files && files.length ? `<ul>` : ``)}
           ${(files || []).map(file => {
             return `  <li><a href="${file[1].name}">${file[1].name}</a></li>\n`;
           }).join('\n')}
-          ${(files.length ? `</ul>` : ``)}
+          ${(files && files.length ? `</ul>` : ``)}
+          <p class="upload-again"><a href="/">Upload more files.</a></p>
       `
     });
 
@@ -139,22 +141,23 @@ function sendResponseUploadSuccess (req, res, fields, files, dir) {
   });
 }
 
-function sendResponseUploadError (req, res, err) {
+function sendResponseUploadError (req, res, fields, files, err) {
   if (err) {
     console.warn('\t upload error:', err);
   }
 
   return sendResponse(req, res, {
     statusCode: 400,
-    title: 'Upload',
+    title: 'Upload error',
     json: {
       error: true,
       success: false,
       message: err
     },
     html: `
-        <p class="error">Failed to upload.</p>
+        <p class="error">Failed to upload ${(files && files.length === 1 ? 'file' : 'files')}.</p>
         ${(err ? `<div class="msg msg-error error">${err}</div>` : '')}
+        <p class="upload-again"><a href="/">Try uploading again.</a></p>
     `
   });
 }
@@ -162,7 +165,8 @@ function sendResponseUploadError (req, res, err) {
 function sendResponse (req, res, data) {
   data = data || {};
   const statusCode = parseInt(data.statusCode || '200', 10);
-  const title = data.title || '';
+  const siteTitle = data.siteTitle || pkgJson.productName || '';
+  const pageTitle = data.pageTitle || data.title || '';
   let json = {};
   let html = '';
   if (typeof data === 'object') {
@@ -187,24 +191,26 @@ function sendResponse (req, res, data) {
   <html>
     <head>
       <meta charset="utf-8">
-      <title>${title}</title>
+      <title>${pageTitle ? `${pageTitle} · ${siteTitle}` : siteTitle}</title>
       <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { font-size: 14px; }
         body { font: 1rem/1.4 monospace; padding: 30px; }
         fieldset { padding: 15px; }
         legend { padding: 0 5px; }
-        h1, p { margin-bottom: 15px; }
+        h1, h2, p, ul { margin-bottom: 15px; }
         p:last-child { margin-bottom: 0; }
         input, button { font-family: inherit; font-size: inherit; }
         input[type="text"] { padding: 3px; }
         button { cursor: pointer; font-weight: bold; padding: 3px 9px; }
         .error { color: maroon; }
         .success { color: green; }
+        .upload-again { margin-top: 45px; }
       </style>
     </head>
     <body>
-      <h1>${title}</h1>
+      ${(siteTitle ? `<h1><a href="/">${siteTitle}</a></h1>` : '')}
+      ${(pageTitle ? `<h2>${pageTitle}</h2>` : '')}
       ${html}
     </body>
   </html>
