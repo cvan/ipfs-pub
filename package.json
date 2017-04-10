@@ -2,7 +2,7 @@
   "name": "ipfs-pub",
   "libraryName": "ipfs-pub",
   "productName": "IPFS Pub",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A service for publishing files to IPFS.",
   "main": "index.js",
   "scripts": {
