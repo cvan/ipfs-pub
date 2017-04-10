@@ -31,7 +31,7 @@ npm install
 
 ## Usage
 
-# From one tab in the command line, start the IPFS daemon:
+From one tab in the command line, start the IPFS daemon:
 
 ```sh
 ipfs daemon
