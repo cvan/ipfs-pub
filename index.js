@@ -10,8 +10,8 @@ const fs = require('fs-extra');
 
 const pkgJson = require('./package.json');
 
-const HOST = process.env.IPFS_PUBLISH_HOST || process.env.HOST || '0.0.0.0';
-const PORT = process.env.IPFS_PUBLISH_PORT || process.env.PORT || 9000;
+const HOST = process.env.IPFSPUB_HOST || process.env.IPFS_PUB_HOST || process.env.HOST || '0.0.0.0';
+const PORT = process.env.IPFSPUB_PORT || process.env.IPFS_PUB_PORT || process.env.PORT || 9000;
 
 const server = http.createServer((req, res) => {
   const method = req.method.toLowerCase();
