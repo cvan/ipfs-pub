@@ -1,0 +1,29 @@
+{
+  "name": "ipfs-pub",
+  "libraryName": "ipfs-pub",
+  "productName": "IPFS Pub",
+  "version": "0.1.0",
+  "description": "A service for publishing files to IPFS.",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run dev",
+    "dev": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cvan/ipfs-pub.git"
+  },
+  "keywords": [
+    "ipfs"
+  ],
+  "author": "christopher van wiemeersch <hearcomestreble@gmail.com>",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/cvan/ipfs-pub/issues"
+  },
+  "homepage": "https://github.com/cvan/ipfs-pub#readme",
+  "dependencies": {
+    "formidable": "^1.1.1",
+    "fs-extra": "^2.1.2"
+  }
+}
