@@ -12,12 +12,17 @@ const pkgJson = require('./package.json');
 
 const HOST = process.env.IPFSPUB_HOST || process.env.IPFS_PUB_HOST || process.env.HOST || '0.0.0.0';
 const PORT = process.env.IPFSPUB_PORT || process.env.IPFS_PUB_PORT || process.env.PORT || 9000;
+const NODE_ENV = process.env.NODE_ENV || 'development';
+
+const DEBUG = NODE_ENV === 'development' || !module.parent;
 
 const server = http.createServer((req, res) => {
   const method = req.method.toLowerCase();
   const pathname = url.parse(req.url).pathname;
 
-  console.log('[%s] %s', method, pathname);
+  if (DEBUG) {
+    console.log('[%s] %s', method, pathname);
+  }
 
   if (method === 'post') {
     if (pathname === '/') {
@@ -48,7 +53,7 @@ const server = http.createServer((req, res) => {
       });
       form.on('end', () => {
         sendResponseUploadSuccess(req, res, fields, files, form.uploadDir).then(output => {
-          if (!module.parent) {
+          if (DEBUG) {
             console.log('\tpublished to IPFS:', JSON.stringify(output, null, '\t\t'));
           }
           // setTimeout(() => {
@@ -240,7 +245,7 @@ function ipfsPublish (dir) {
  
     const done = (evtType) => {
       return () => {
-        if (!module.parent) {
+        if (DEBUG) {
           console.log('\t[ipfs] daemon process %s', evtType);
         }
  
@@ -268,7 +273,9 @@ function ipfsPublish (dir) {
 
 if (!module.parent) {
   server.listen(PORT, HOST, () => {
-    console.log(`Listening on ${HOST}:${PORT}`);
+    if (DEBUG) {
+      console.log(`Listening on ${HOST}:${PORT}`);
+    }
   });
 }
 
